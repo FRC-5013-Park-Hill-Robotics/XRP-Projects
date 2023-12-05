@@ -17,8 +17,7 @@ public class AutonomousDistance extends SequentialCommandGroup {
    */
   public AutonomousDistance(Drivetrain drivetrain, SensorGroup sensors) {
     addCommands(
-        new Roomba(0.5, 100, drivetrain, sensors.m_rangeFinder, 0.4, -90),
-        new TurnDegrees(-0.5, 180, drivetrain)
+        new Roomba(0.8, 100, drivetrain, sensors, 0.35, 90)
         );
   }
 }

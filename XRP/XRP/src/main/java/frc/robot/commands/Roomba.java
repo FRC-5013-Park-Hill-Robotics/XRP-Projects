@@ -7,6 +7,7 @@ package frc.robot.commands;
 import frc.robot.subsystems.Drivetrain;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.SensorGroup;
 
 public class Roomba extends Command {
   private final Drivetrain m_drive;
@@ -14,7 +15,8 @@ public class Roomba extends Command {
   private final double m_speed;
   private final AnalogInput m_input;
   private final double m_bar;
-  private final double m_turn;
+  private final double m_turn_degrees;
+  private int state;
 
   /**
    * Creates a new DriveDistance. This command will drive your your robot for a desired distance at
@@ -24,13 +26,14 @@ public class Roomba extends Command {
    * @param inches The number of inches the robot will drive
    * @param drive The drivetrain subsystem on which this command will run
    */
-  public Roomba(double speed, double inches, Drivetrain drive, AnalogInput input, double bar, double turn) {
+  public Roomba(double speed, double inches, Drivetrain drive, SensorGroup input, double bar, double turn) {
     m_distance = inches;
     m_speed = speed;
     m_drive = drive;
-    m_input = input;
+    m_input = input.m_rangeFinder;
     m_bar = bar;
-    m_turn = turn;
+    m_turn_degrees = turn;
+    state = 0;
     addRequirements(drive);
   }
 
@@ -44,11 +47,19 @@ public class Roomba extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(m_input.getAverageVoltage() > m_bar){
-      m_drive.arcadeDrive(m_speed, 0);
-    } 
-    else {
-      m_drive.arcadeDrive(0.0, m_turn);
+    if(state == 0){
+      if(m_input.getAverageVoltage() > m_bar){
+       m_drive.arcadeDrive(m_speed, 0);
+      } else {
+       state = 1;
+       initialize();
+      }
+    }
+    else if(state == 1){
+      m_drive.arcadeDrive(0, m_speed);
+      if(turnIsFinished()){
+        state = 0;
+      }
     }
   }
 
@@ -63,5 +74,17 @@ public class Roomba extends Command {
   public boolean isFinished() {
     // Compare distance travelled from start to desired distance
     return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+  }
+
+  public boolean turnIsFinished() {
+    double inchPerDegree = Math.PI * 6.102 / 360;
+    // Compare distance travelled from start to distance based on degree turn
+    return getAverageTurningDistance() >= (inchPerDegree * m_turn_degrees);
+  }
+
+  private double getAverageTurningDistance() {
+    double leftDistance = Math.abs(m_drive.getLeftDistanceInch());
+    double rightDistance = Math.abs(m_drive.getRightDistanceInch());
+    return (leftDistance + rightDistance) / 2.0;
   }
 }

@@ -71,6 +71,7 @@ public class RobotContainer {
     SmartDashboard.putData(m_chooser);
 
     SmartDashboard.putNumber("Range Finder", m_sensors.m_rangeFinder.getAverageVoltage());
+    SmartDashboard.putNumber("Line Follower", m_sensors.m_lineFollower.getAverageVoltage());
   }
   
   private void configureButtonBindingsControler() {
