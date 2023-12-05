@@ -12,6 +12,7 @@ import frc.robot.subsystems.SensorGroup;
 public class Roomba extends Command {
   private final Drivetrain m_drive;
   private final double m_distance;
+  private double m_traveled_distance;
   private final double m_speed;
   private final AnalogInput m_input;
   private final double m_bar;
@@ -28,6 +29,7 @@ public class Roomba extends Command {
    */
   public Roomba(double speed, double inches, Drivetrain drive, SensorGroup input, double bar, double turn) {
     m_distance = inches;
+    m_traveled_distance = 0;
     m_speed = speed;
     m_drive = drive;
     m_input = input.m_rangeFinder;
@@ -52,6 +54,7 @@ public class Roomba extends Command {
        m_drive.arcadeDrive(m_speed, 0);
       } else {
        state = 1;
+       m_traveled_distance += Math.abs(m_drive.getAverageDistanceInch());
        initialize();
       }
     }
@@ -73,7 +76,7 @@ public class Roomba extends Command {
   @Override
   public boolean isFinished() {
     // Compare distance travelled from start to desired distance
-    return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+    return m_traveled_distance >= m_distance;
   }
 
   public boolean turnIsFinished() {
